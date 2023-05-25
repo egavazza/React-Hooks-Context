@@ -10,63 +10,35 @@ import Step from "./Step";
 
 //Validaciones
 import { validarEmail, validarPassword } from "./DatosUsuario/Validaciones";
+import { validarNombre,  validarApellido,   validarTelefono } from "./DatosPersonales/validaciones";
+import { validarInput } from "./DatosEntrega/validaciones";
 
 const Form = () => {
   const [step, setStep] = useState(0);
   const [pasos, setPasos] = useState({});
 
-  useEffect(() => {
-    console.log("UseEffect")
-  });
-
-  useEffect(() => {
-    console.log("Se ha actualizado el step: ", step)
-  }, [step]);
-
-  // useEffect(async () => {
-  //   try {
-  //     const data = await fetch ("http://jsonplaceholder.typicode.com/posts");
-  //     const post = await data.json();
-  //     console.log(posts;
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  // });
-
-  // step = 0 ---> <DatosUsuario />
-  // step = 1 ---> <DatosPersonales />
-  // step = 2 ---> <DatosEntrega />
-  // step = 3 ---> <Complete />
-
-  const updateStep = (step) => {
-    console.log("actualizar paso", step);
-    setStep(step)
-  };
-
-  const steps = {
-    0: <DatosUsuario updateStep={updateStep} />,
-    1: <DatosPersonales updateStep={updateStep} />,
-    2: <DatosEntrega updateStep={updateStep} />,
-    3: <Complete updateStep={updateStep} />,
-  };
-
-  const onSubmit = (e) => {
+  const onSubmit = (e, step, pasos) => {
+    console.log(step);
     e.preventDefault();
     let newStep = step + 1;
-    setStep(newStep)
+    console.log(newStep);
+    setStep(newStep);
+    if (newStep === 3) {
+      console.log("Eviar datos al backend", pasos);
+    }
   };
 
-  const handleChange = (element, position, currentStep, validator) => {
+  const handleChange = (element, position, currentStep, validator, pasos) => {
     const value = element.target.value;
     const valid = validator(value);
-    console.log(value);
-    console.log(valid);
-    console.log("position", position);
-    console.log("currentStep", currentStep);
-    console.log("validator", validator);
-  }
+    const cp = { ...pasos };
+    cp[currentStep].inputs[position].value = value;
+    cp[currentStep].inputs[position].valid = valid;
 
-  const stepFlow = {
+    setPasos(cp);
+  };
+
+  const stepsFlow = {
     0: {
       inputs: [
         {
@@ -84,13 +56,120 @@ const Form = () => {
           value: "",
           valid: null,
           onChange: handleChange,
-          helperText: "Ingresa una contraseña válida. Al menos 8 caracteres y máximo 20 caracteres.",
+          helperText:
+            "Ingresa una contraseña válida, Al menos 8 caracteres y máximo 20.",
           validator: validarPassword,
-        }
+        },
+        {
+          label: "Cuenta de github",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText:
+            "Ingresa una contraseña válida, Al menos 8 caracteres y máximo 20.",
+          validator: validarPassword,
+        },
       ],
       buttonText: "Siguiente",
-      onSubmit
+      onSubmit,
     },
+    1: {
+      inputs: [
+        {
+          label: "Nombre",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 2 caracteres y máximo 30 caracteres.",
+          validator: validarNombre,
+        },
+        {
+          label: "Apellido",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 2 caracteres y máximo 50 caracteres.",
+          validator: validarApellido,
+        },
+        {
+          label: "Número telefonico",
+          type: "number",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 8 digitos y máximo 14 digitos.",
+          validator: validarTelefono,
+        },
+      ],
+      buttonText: "Siguiente",
+      onSubmit,
+    },
+    2: {
+      inputs: [
+        {
+          label: "Direccion",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 4 caracteres.",
+          validator: validarInput,
+        },
+        {
+          label: "Ciudad",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 4 caracteres.",
+          validator: validarInput,
+        },
+        {
+          label: "Estado/Provincia",
+          type: "text",
+          value: "",
+          valid: null,
+          onChange: handleChange,
+          helperText: "Ingresa al menos 4 caracteres.",
+          validator: validarInput,
+        },
+      ],
+      buttonText: "Crear cuenta",
+      onSubmit,
+    },
+  };
+
+  useEffect(() => {
+    setPasos(stepsFlow);
+  }, []);
+
+  // useEffect(async () => {
+  //   try {
+  //     const data = await fetch ("http://jsonplaceholder.typicode.com/posts");
+  //     const post = await data.json();
+  //     console.log(posts;
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  // });
+
+  // step = 0 ---> <DatosUsuario />
+  // step = 1 ---> <DatosPersonales />
+  // step = 2 ---> <DatosEntrega />
+  // step = 3 ---> <Complete />
+
+  const updateStep = (step) => {
+    setStep(step)
+  };
+
+  const steps = {
+    0: <DatosUsuario updateStep={updateStep} />,
+    1: <DatosPersonales updateStep={updateStep} />,
+    2: <DatosEntrega updateStep={updateStep} />,
+    3: <Complete updateStep={updateStep} />,
   };
 
   return (
@@ -108,7 +187,8 @@ const Form = () => {
       <FormSpace>
         {step < 3 && <Stepper step={step} />}
         {/* {steps[step]} */}
-        <Step data={ stepFlow[step] } step={step} />
+        {step < 3 && pasos[step] && ( <Step data={pasos[step]} step={step} pasos={pasos} />)}
+        {step === 3 && <Complete />}
       </FormSpace>
     </Box>
   );

@@ -34,7 +34,7 @@ const Step = ({ data, step, pasos }) => {
               margin="dense"
               type={ type }
               error={ valid === false}
-              helperText={ valid === false && { helperText } }
+              helperText={ valid === false && ( helperText ) }
               value={ value }
               onChange={ (e) => onChange (e, i, step, validator, pasos) }
             />
